@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ff4d4d; /* Red background */
+            padding: 10px;
+            color: #fff; /* White text color */
+        }
+        .header img {
+            width: 50px;
+            height: auto;
+            margin-right: 10px;
+        }
+        .btn-dropdown {
+            background-color: blue;
+            border: 2;
+            color: #fff;
+            cursor: pointer;
+        }
+        .dropdown-menu {
+            min-width: 150px;
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .dropdown-item {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: #333;
+            transition: background-color 3s ease;
+        }
+        .dropdown-item:hover {
+            background-color: #f5f5f5;
+        }
+        filter-dropdown {
+            position: relative;
+        }
+        .filter-dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            top: 40px;
+            right: 0;
+            z-index: 1000;
+        }
+        .filter-dropdown-content a {
+            display: block;
+            padding: 5px 0;
+            color: #333;
+            text-decoration: none;
+        }
+        .filter-dropdown-content a:hover {
+            background-color: #f9f9f9;
+        }
+        .search-form {
+            flex-grow: 1; /* Allow search form to grow and fill remaining space */
+            margin-left: 20px; /* Add margin to separate search form from other elements */
+        }
+        .form-control {
+            border-radius: 20px; /* Rounded corners for the search input */
+        }
+    </style>
+    <style>
+        body {
+            background-color: #ffcc00; /* Yellow background */
+            color: #333; /* Dark text color */
+            font-family: Arial, sans-serif; /* Use professional font */
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #ff4d4d; /* Red background */
+            color: #fff; /* White text color */
+            font-weight: bold;
+        }
+        
+        .table {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+            <!-- Left side: Image -->
+            <img src="/var/www/html/download.jpg" alt="Logo" style="height: 30px; margin-right: 10px;">
+            <!-- HTML form for search input -->
+<form method="GET" action="search_results.php" class="search-form">
+    <input type="text" name="search" class="form-control" placeholder="Search by name or registration number">
+    <button type="submit">Search</button>
+</form>
+    
+<!-- Right side: Dropdown button -->
+            <div class="dropdown">
+                <button class="btn btn-dropdown dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <!-- Three dots icon -->
+                    &#9776; <!-- Unicode for three dots -->
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="index.html">Home</a>
+                    <a>
+                        <div class="filter-dropdown">
+                        <button class="btn btn-primary" onclick="toggleFilterDropdown()">Filter</button>
+                        <div class="filter-dropdown-content" id="filterDropdown">
+                            <a href="approved_students.php">Approved</a>
+                            <a href="rejected_students.php">Rejected</a>
+                            <a href="pending_students.php">Pending</a>
+                            <a href="all_students.php">All</a>
+                        </div>
+                    </div>
+                    </a>
+                    <a class="dropdown-item" href="logout.php">Logout</a>
+                </div>
+            </div>
+</div>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h2>Admin Dashboard</h2>
+                </div>
+                <form action="filter_students.php" method="GET" class="mt-3">
+                <div class="card-body">
+                    
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Photo</th>
+                                <th>Name</th>
+                                <th>Reg. No</th>
+                                <th>Email</th>
+                                <th>Programme</th>
+                                <th>Semester</th>
+                                <th>Subjects</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            // Include database configuration and connect to the database
+                            require_once('db_config.php');
+                            $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+                            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+                            // Fetch all student registrations from the database
+                            $stmt = $pdo->query("SELECT * FROM students");
+                            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                echo '<tr>';
+                                echo '<td><img src="' . $row['photo'] . '" alt="Student Photo" class="img-thumbnail" style="width: 80px; height: 80px;"></td>';
+                                echo '<td>' . $row['name'] . '</td>';
+                                echo '<td>' . $row['reg_no'] . '</td>';
+                                echo '<td>' . $row['email'] . '</td>';
+                                echo '<td>' . ucfirst($row['programme']) . '</td>';
+                                echo '<td>Semester ' . $row['semester'] . '</td>';
+                                echo '<td>' . $row['subjects'] . '</td>';
+                                echo '<td>' . $row['status'] . '</td>;
+                                echo '<td>
+                                        <a href="delete_student.php?id=' . $row['id'] . '" class="btn btn-primary btn-sm">Delete</a>
+                                        <a href="reject_student.php?id=' . $row['id'] . '" class="btn btn-danger btn-sm">Reject</a>
+                                        <a href="approve_student.php?id=' . $row['id'] . '" class="btn btn-success btn-sm">Approve</a>
+                                      </td>';
+                                echo '</tr>';
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies (not required for this page) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // Toggle filter dropdown visibility
+    function toggleFilterDropdown() {
+        var dropdown = document.getElementById("filterDropdown");
+        dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
+    }
+
+    // Close filter dropdown when clicking outside
+    window.onclick = function(event) {
+        if (!event.target.matches('.btn-primary')) {
+            var dropdown = document.getElementById("filterDropdown");
+            if (dropdown.style.display === 'block') {
+                dropdown.style.display = 'none';
+            }
+        }
+    }
+</script>
+</body>
+</html>
